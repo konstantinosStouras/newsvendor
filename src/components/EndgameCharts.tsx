@@ -90,7 +90,7 @@ export function EndgameCharts({
             <LineChart data={lineData} margin={{ bottom: 15 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="week" tick={{ fill: "var(--muted)", fontSize: 11 }} stroke="var(--border)" label={{ value: "Week", position: "insideBottom", offset: -5, fill: "var(--muted)", fontSize: 11 }} />
-              <YAxis tick={{ fill: "var(--muted)", fontSize: 11 }} stroke="var(--border)" />
+              <YAxis tick={{ fill: "var(--muted)", fontSize: 11 }} stroke="var(--border)" label={{ value: "Quantity", angle: -90, position: "insideLeft", offset: 10, fill: "var(--muted)", fontSize: 12 }} />
               <Tooltip
                 contentStyle={{ background: "var(--card)", borderColor: "var(--border)", borderRadius: "var(--radius-sm)", color: "var(--ink)" }}
                 itemStyle={{ color: "var(--ink)" }}
