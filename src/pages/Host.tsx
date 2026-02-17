@@ -15,8 +15,11 @@ export function Host() {
     price: 1.0,
     cost: 0.2,
     salvage: 0.0,
-    weeks: 10,
+    weeks: 4,
   });
+
+  // Separate string state for the weeks input so users can clear and retype
+  const [weeksInput, setWeeksInput] = useState("4");
 
   const [created, setCreated] = useState<{ sessionId: string; code: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,7 +60,7 @@ export function Host() {
     }
     setBusy(true);
     try {
-      const weeks = Math.max(1, Math.min(52, Math.round(Number(params.weeks ?? 10))));
+      const weeks = Math.max(1, Math.min(52, Math.round(Number(params.weeks ?? 4))));
       const res = await api.createSession({ ...params, weeks });
       setCreated(res.data);
     } catch (e: any) {
@@ -178,8 +181,30 @@ export function Host() {
               min={1}
               max={52}
               step={1}
-              value={params.weeks}
-              onChange={(e) => setParams((p) => ({ ...p, weeks: Math.max(1, Math.min(52, Math.round(Number(e.target.value)))) }))}
+              value={weeksInput}
+              onChange={(e) => {
+                const raw = e.target.value;
+                setWeeksInput(raw);
+                if (raw.trim() === "") {
+                  // Allow empty field while typing — don't snap to 1
+                  return;
+                }
+                const n = Math.round(Number(raw));
+                if (Number.isFinite(n) && n >= 1) {
+                  setParams((p) => ({ ...p, weeks: Math.min(52, n) }));
+                }
+              }}
+              onBlur={() => {
+                // On blur, enforce valid value
+                const n = Math.round(Number(weeksInput));
+                if (!Number.isFinite(n) || n < 1) {
+                  setWeeksInput(String(params.weeks));
+                } else {
+                  const clamped = Math.max(1, Math.min(52, n));
+                  setParams((p) => ({ ...p, weeks: clamped }));
+                  setWeeksInput(String(clamped));
+                }
+              }}
             />
           </div>
           <div>
@@ -251,7 +276,7 @@ export function Host() {
                         <span className={`status-dot ${statusConfig.dotClass}`} />
                       </div>
                       <div className="small">
-                        Week {(s.data.weekIndex ?? 0) + 1} of {s.data.weeks ?? 10} · {s.data.playersCount ?? 0} players
+                        Week {(s.data.weekIndex ?? 0) + 1} of {s.data.weeks ?? 4} · {s.data.playersCount ?? 0} players
                       </div>
                     </div>
                     <div className="row">
@@ -296,7 +321,7 @@ export function Host() {
                         <span className="status-dot finished" />
                       </div>
                       <div className="small">
-                        Week {(s.data.weekIndex ?? 0) + 1} of {s.data.weeks ?? 10} · {s.data.playersCount ?? 0} players
+                        Week {(s.data.weekIndex ?? 0) + 1} of {s.data.weeks ?? 4} · {s.data.playersCount ?? 0} players
                       </div>
                     </div>
                     <div className="row">
