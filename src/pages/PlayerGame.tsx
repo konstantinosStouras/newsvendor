@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "../lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import type { PlayerDoc, SessionPublic } from "../lib/types";
@@ -153,7 +154,7 @@ export function PlayerGame() {
       setMsg("");
       setShowSubmitted(true);
       if (submittedTimerRef.current) window.clearTimeout(submittedTimerRef.current);
-      submittedTimerRef.current = window.setTimeout(() => setShowSubmitted(false), 4000);
+      submittedTimerRef.current = window.setTimeout(() => setShowSubmitted(false), 8000);
     } catch (e: any) {
       console.error(e);
       setMsg(e?.message ?? "Submit failed");
@@ -290,7 +291,7 @@ export function PlayerGame() {
             <p className="small">Available once the host starts the session.</p>
           </div>
         ) : (
-          <TrainingChart demands={allDemands} meanHat={meanHat} sigmaHat={sigmaHat} totalDays={totalDays} />
+          <TrainingChart demands={allDemands} meanHat={meanHat} sigmaHat={sigmaHat} totalDays={totalDays} nTrain={training.length} weeks={weeks} />
         )}
         <RevealTheatre session={session} player={player} />
       </div>
@@ -305,7 +306,51 @@ export function PlayerGame() {
 
       <Toast message="Host nudge: please make your decision now." show={showNudge} tone="alert" />
       <Toast message="Welcome back! Your progress has been restored." show={showResumed} tone="success" />
-      <Toast message="Bake plan submitted. Waiting for others..." show={showSubmitted} tone="success" position="top" />
+
+      {/* Centered submission confirmation overlay */}
+      <AnimatePresence>
+        {showSubmitted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000,
+              pointerEvents: "none",
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              style={{
+                background: "var(--card)",
+                border: "2px solid var(--success)",
+                borderRadius: "var(--radius)",
+                padding: "24px 36px",
+                textAlign: "center",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+                pointerEvents: "auto",
+              }}
+            >
+              <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "var(--success)", marginBottom: 4 }}>
+                Bake plan submitted!
+              </div>
+              <div className="small" style={{ color: "var(--muted)" }}>
+                Waiting for other players and host to advance...
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {showOutlierModal && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">

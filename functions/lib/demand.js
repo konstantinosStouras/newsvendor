@@ -213,12 +213,21 @@ function generateDemandDataset(params, seed) {
         const tolSkewCombined = 0.5;
         const tolExcessKurtCombined = 0.8;
         const tolQ = Math.max(1, Math.round(0.1 * Math.max(1, optimalQ)));
+        // Track the best-scoring candidate even if none pass the tolerance checks
+        let fallbackBest = null;
+        let fallbackBestScore = -Infinity;
         for (let attempt = 0; attempt < 8000; attempt++) {
             const draws = [];
             while (draws.length < nTotal)
                 draws.push(truncatedNormalInt(params.mu, params.sigma, rng2));
             const training = draws.slice(0, params.nTrain);
             const inGame = draws.slice(params.nTrain);
+            // Track best candidate regardless of whether it passes checks
+            const sc = scoreDataset(training, inGame, params, optimalQ);
+            if (sc > fallbackBestScore) {
+                fallbackBestScore = sc;
+                fallbackBest = { training, inGame, optimalQ };
+            }
             if (candidateOk(training, inGame, params, optimalQ, {
                 tolMean,
                 tolStd,
@@ -231,9 +240,14 @@ function generateDemandDataset(params, seed) {
                 return { training, inGame, optimalQ };
             }
         }
-        if (best)
-            return best;
-        return { training: [], inGame: [], optimalQ };
+        // Always return a dataset — use the best candidate even if tolerances weren't met
+        if (fallbackBest)
+            return fallbackBest;
+        // Absolute last resort: generate a single draw (should never happen)
+        const draws = [];
+        while (draws.length < nTotal)
+            draws.push(truncatedNormalInt(params.mu, params.sigma, rng2));
+        return { training: draws.slice(0, params.nTrain), inGame: draws.slice(params.nTrain), optimalQ };
     }
     return best;
 }

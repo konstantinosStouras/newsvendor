@@ -24,6 +24,7 @@ export function Host() {
   const [listMsg, setListMsg] = useState<string>("");
 
   const [sessions, setSessions] = useState<Array<{ id: string; data: SessionPublic }>>([]);
+  const [confirmModal, setConfirmModal] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -81,8 +82,7 @@ export function Host() {
     }
   }
 
-  async function deleteSession(sessionId: string) {
-    if (!confirm("Delete this finished session? This cannot be undone.")) return;
+  async function doDeleteSession(sessionId: string) {
     setListMsg("");
     setBusy(true);
     try {
@@ -94,6 +94,20 @@ export function Host() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function deleteSession(sessionId: string) {
+    setConfirmModal({
+      message: "Delete this session and all its data? This cannot be undone.",
+      onConfirm: () => { setConfirmModal(null); doDeleteSession(sessionId); },
+    });
+  }
+
+  function endSessionConfirm(sessionId: string) {
+    setConfirmModal({
+      message: "End this session for all players?",
+      onConfirm: () => { setConfirmModal(null); endSession(sessionId); },
+    });
   }
 
   const activeSessions = sessions.filter((s) => s.data?.status !== "finished");
@@ -171,7 +185,7 @@ export function Host() {
           <div>
             <label>Schedule</label>
             <div className="small" style={{ padding: "12px 0" }}>
-              {params.weeks} weeks x 5 days = <span className="mono">{params.weeks * 5}</span> decisions
+              {params.weeks} weeks x 5 days = <span className="mono">{params.weeks}</span> decisions, <span className="mono">{params.weeks * 5}</span> days
             </div>
           </div>
         </div>
@@ -245,13 +259,16 @@ export function Host() {
                       <button
                         className="btn ghost"
                         disabled={busy}
-                        onClick={() => {
-                          if (confirm("End this session for all players?")) {
-                            endSession(s.id);
-                          }
-                        }}
+                        onClick={() => endSessionConfirm(s.id)}
                       >
                         End
+                      </button>
+                      <button
+                        className="btn danger"
+                        disabled={busy}
+                        onClick={() => deleteSession(s.id)}
+                      >
+                        Delete
                       </button>
                     </div>
                   </div>
@@ -342,6 +359,30 @@ export function Host() {
           </div>
         </div>
       </div>
+
+      {/* Centered confirmation modal */}
+      {confirmModal && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal" style={{ maxWidth: 420, textAlign: "center" }}>
+            <h3 style={{ marginBottom: 12 }}>Confirm</h3>
+            <p className="small" style={{ marginBottom: 20 }}>{confirmModal.message}</p>
+            <div className="row" style={{ justifyContent: "center", gap: 12 }}>
+              <button
+                className="btn secondary"
+                onClick={() => setConfirmModal(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn danger"
+                onClick={confirmModal.onConfirm}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

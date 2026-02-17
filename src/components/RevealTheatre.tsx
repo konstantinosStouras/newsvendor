@@ -71,13 +71,13 @@ export function RevealTheatre({
   return (
     <div className="card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
-        <h2 style={{ margin: 0 }}>Revealed Demand</h2>
+        <h2 style={{ margin: 0 }}>Realized Demand</h2>
         <span className="small">Bakery doors open Mon–Fri</span>
       </div>
 
       <div className="kpi" style={{ gap: "6px 8px" }}>
         <div className="pill" style={{ padding: "4px 10px" }}>Week: <span className="mono">{(session.weekIndex ?? 0) + 1}/{weeks}</span></div>
-        <div className="pill" style={{ padding: "4px 10px" }}>Revealed: <span className="mono">{revealIndex}/{totalDays}</span></div>
+        <div className="pill" style={{ padding: "4px 10px" }}>Realized: <span className="mono">{revealIndex}/{totalDays}</span></div>
         <div className="pill" style={{ padding: "4px 10px" }}>
           Plan: <span className="mono">{orderQty ?? "—"}</span>
         </div>

@@ -383,11 +383,24 @@ exports.advanceReveal = (0, https_1.onCall)(async (request) => {
             playerUpdates.push({ ref: pdoc.ref, dailyProfit, cumulativeProfit });
             const submittedOrders = orders.filter((x) => typeof x === "number");
             const avgOrder = submittedOrders.length ? submittedOrders.reduce((a, b) => a + b, 0) / submittedOrders.length : 0;
+            // Compute per-week profits from dailyProfit
+            const profitsByWeek = [];
+            for (let w = 0; w <= weekIndex; w++) {
+                let weekProfit = 0;
+                for (let d = 0; d < 5; d++) {
+                    const idx = w * 5 + d;
+                    if (idx < dailyProfit.length)
+                        weekProfit += dailyProfit[idx];
+                }
+                profitsByWeek.push(Math.round(weekProfit * 100) / 100);
+            }
             lbRows.push({
                 uid: pdoc.id,
                 name: String(p.name ?? "Anonymous"),
                 profit: cumulativeProfit,
                 avgOrder,
+                ordersByWeek: orders,
+                profitsByWeek,
             });
         });
         lbRows.sort((a, b) => b.profit - a.profit);
@@ -574,11 +587,24 @@ exports.endSession = (0, https_1.onCall)(async (request) => {
             }
             const submittedOrders = orders.filter((x) => typeof x === "number");
             const avgOrder = submittedOrders.length ? submittedOrders.reduce((a, b) => a + b, 0) / submittedOrders.length : 0;
+            // Compute per-week profits
+            const profitsByWeek = [];
+            for (let w = 0; w < weeks; w++) {
+                let weekProfit = 0;
+                for (let d = 0; d < 5; d++) {
+                    const idx = w * 5 + d;
+                    if (idx < dailyProfit.length)
+                        weekProfit += dailyProfit[idx];
+                }
+                profitsByWeek.push(Math.round(weekProfit * 100) / 100);
+            }
             lbRows.push({
                 uid: pdoc.id,
                 name: String(p.name ?? "Anonymous"),
                 profit: cumulativeProfit,
                 avgOrder,
+                ordersByWeek: orders,
+                profitsByWeek,
             });
             // Queue for batch write outside transaction
             playerUpdates.push({ ref: pdoc.ref, dailyProfit, cumulativeProfit });
@@ -621,10 +647,7 @@ exports.deleteSession = (0, https_1.onCall)(async (request) => {
     if (!sessionSnap.exists)
         throw new https_1.HttpsError("not-found", "Session not found.");
     const session = sessionSnap.data();
-    // Only allow deleting finished sessions
-    if (session.status !== "finished") {
-        throw new https_1.HttpsError("failed-precondition", "Only finished sessions can be deleted.");
-    }
+    // Allow deleting sessions in any status
     const code = session.code;
     await db.recursiveDelete(sessionRef);
     if (code) {

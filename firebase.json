@@ -12,7 +12,7 @@
   ],
   "hosting": [
     {
-      "site": "the-beer-game-37777398-4d5fb-69285",
+      "site": "newsvendor-kostas",
       "public": "dist",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [{ "source": "**", "destination": "/index.html" }]

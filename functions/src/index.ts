@@ -414,7 +414,7 @@ export const advanceReveal = onCall(async (request) => {
     const cost = Number(session.cost ?? 0.2);
     const salvage = Number(session.salvage ?? 0);
 
-    const lbRows: Array<{ uid: string; name: string; profit: number; avgOrder: number }> = [];
+    const lbRows: Array<{ uid: string; name: string; profit: number; avgOrder: number; ordersByWeek: Array<number | null>; profitsByWeek: number[] }> = [];
 
     // Calculate updates but don't write yet
     playersSnap.docs.forEach((pdoc) => {
@@ -436,11 +436,24 @@ export const advanceReveal = onCall(async (request) => {
       const submittedOrders = orders.filter((x) => typeof x === "number") as number[];
       const avgOrder = submittedOrders.length ? submittedOrders.reduce((a, b) => a + b, 0) / submittedOrders.length : 0;
 
+      // Compute per-week profits from dailyProfit
+      const profitsByWeek: number[] = [];
+      for (let w = 0; w <= weekIndex; w++) {
+        let weekProfit = 0;
+        for (let d = 0; d < 5; d++) {
+          const idx = w * 5 + d;
+          if (idx < dailyProfit.length) weekProfit += dailyProfit[idx];
+        }
+        profitsByWeek.push(Math.round(weekProfit * 100) / 100);
+      }
+
       lbRows.push({
         uid: pdoc.id,
         name: String(p.name ?? "Anonymous"),
         profit: cumulativeProfit,
         avgOrder,
+        ordersByWeek: orders,
+        profitsByWeek,
       });
     });
 
@@ -636,7 +649,7 @@ export const endSession = onCall(async (request) => {
     const salvage = Number(session.salvage ?? 0);
 
     const playersSnap = await tx.get(sessionRef.collection("players"));
-    const lbRows: Array<{ uid: string; name: string; profit: number; avgOrder: number }> = [];
+    const lbRows: Array<{ uid: string; name: string; profit: number; avgOrder: number; ordersByWeek: Array<number | null>; profitsByWeek: number[] }> = [];
     const sums = Array.from({ length: dayCount }, () => 0);
 
     // Calculate updates but don't write yet
@@ -661,11 +674,24 @@ export const endSession = onCall(async (request) => {
       const submittedOrders = orders.filter((x) => typeof x === "number") as number[];
       const avgOrder = submittedOrders.length ? submittedOrders.reduce((a, b) => a + b, 0) / submittedOrders.length : 0;
 
+      // Compute per-week profits
+      const profitsByWeek: number[] = [];
+      for (let w = 0; w < weeks; w++) {
+        let weekProfit = 0;
+        for (let d = 0; d < 5; d++) {
+          const idx = w * 5 + d;
+          if (idx < dailyProfit.length) weekProfit += dailyProfit[idx];
+        }
+        profitsByWeek.push(Math.round(weekProfit * 100) / 100);
+      }
+
       lbRows.push({
         uid: pdoc.id,
         name: String(p.name ?? "Anonymous"),
         profit: cumulativeProfit,
         avgOrder,
+        ordersByWeek: orders,
+        profitsByWeek,
       });
 
       // Queue for batch write outside transaction
@@ -718,10 +744,7 @@ export const deleteSession = onCall(async (request) => {
   if (!sessionSnap.exists) throw new HttpsError("not-found", "Session not found.");
   const session = sessionSnap.data() as any;
 
-  // Only allow deleting finished sessions
-  if (session.status !== "finished") {
-    throw new HttpsError("failed-precondition", "Only finished sessions can be deleted.");
-  }
+  // Allow deleting sessions in any status
 
   const code = session.code;
   await db.recursiveDelete(sessionRef);

@@ -1,42 +1,63 @@
 # The Newsvendor Game
 
-This is an open-source implementation of the newsvendor game. The newsvendor game is an excellent introduction to inventory management, and illustrates the asymmetric risk between ordering too high or too low. Note that since noone sells newspapers anymore, I changed the context to a croissant bakery.
+An open-source implementation of the classic newsvendor problem—an excellent introduction to inventory management and the asymmetric risk of ordering too high or too low. The game uses a croissant bakery setting for a modern, relatable context.
 
-## Version Update
+## 🎮 Play Online
 
-This is V1.
+**Try it now:** https://newsvendor-kostas.web.app/
 
-## Hosting
+The game is hosted on Firebase and is free to play for classroom and workshop use.
 
-I host this version of the game at https://go.wisc.edu/z301dk. You can set up a session with the password Sesame, and log in as a player using a separate browser window. I would appreciate some playtesting, if you have the time, and feel free to use it in the classroom!. I added a guide on how to set up hosting yourself for free [here](https://github.com/siemsene/beergame/blob/main/Howtohost.md).
+## 📚 About the Game
 
-The hosted game runs on cloud services (Firebase). These services are free only up to certain daily usage limits. Above those limits, I incur out-of-pocket costs.
+The newsvendor game teaches fundamental principles of inventory management:
+- Understanding the cost structure of overstocking vs. understocking
+- Learning the concept of the critical fractile
+- Making optimal ordering decisions under demand uncertainty
+- Analyzing performance through profit/loss feedback
 
-- The hosted game is **free to use** for typical classroom and workshop sizes.
-- As a rough guideline, up to about **200 players per day in total across all hosts** fits comfortably within the free tier.
-- Above that level, I may incur additional costs for database reads/writes, bandwidth, and related hosting resources.
+Players take on the role of a bakery owner, making weekly order decisions for a product with uncertain demand. Each week consists of 5 daily delivery decisions, followed by demand revelation and profit calculation.
 
-I reserve the right to:
+## 🚀 Getting Started as a Host
 
-- Limit or throttle access (for example, limiting new games if daily usage is very high), and/or
-- Ask heavy users to share in the actual hosting costs their sessions generate.
+1. Visit https://newsvendor-kostas.web.app/
+2. Log in as a host with your chosen password
+3. Create a new session and share the Game ID with players
+4. Monitor the lobby and manage player connections
+5. Customize game parameters (decision periods, demand distribution, cost structure)
+6. Start the game when all players are ready
 
-## Other Newsvendor Games
+Players can reconnect at any time using their Game ID and name, even if temporarily disconnected.
 
-There is a paid version at [FathomD](https://www.fathomd.com/nvg).
+## 👥 For Players
 
-## License
+1. Enter the Game ID shared by your host
+2. Choose a memorable name
+3. Each week, decide how many croissants to order
+4. After 5 daily decisions, demand is revealed and you see your profit/loss
+5. Continue across multiple weeks to improve your strategy
 
-This version of the beer game is open source and has a [Creative Commons license](https://creativecommons.org/licenses/by-sa/4.0/). You can use it for free, and you can modify the code as you see fit; but anything you build on this code has to fall under the same license.
+## 🛠️ Self-Hosting
 
-## How to Start a Session
+To host your own instance for free, see the [hosting guide](https://github.com/siemsene/newsvendor/blob/main/Howtohost.md).
 
-To host a game, you first need to log in as a host; it will ask you for a password, which is 'Sesame'. I know - not very secure, but enough for now. You can then create a new session with a Game ID. You can share this ID with students, who can then log in with this game ID and a Name. This can be any name, but they should remember it, since if they get disconnected from the game, they can always reconnect using the Game ID and their name as long as the session is still running.
+The game runs on Firebase Cloud. Free tier usage covers typical classroom sessions (up to ~200 players/day across all instances).
 
-You can test this out yourself with multiple browser tabs.
+## 💻 Technology Stack
 
-You can monitor the lobby as the host and remove players if you want to. You can also redraw the dataset used for the session - I tried to draw datasets that are representative of the distribution, and offer a clear advantage when people actually order the critical fractile. When all players have registered, you can start the game.
+- **Frontend:** TypeScript, Vite
+- **Backend:** Firebase (Firestore, Cloud Functions)
+- **Hosting:** Firebase Hosting
 
-## Game Rules
+## 📋 License
 
-You can define game parameters as the host. I implemented a structure in which players make decisions for one week (one order quantity delivered on each of 5 days), after which demand for that week is revealed (all 5 days). 
+This project is open source under the [MIT License](https://opensource.org/licenses/MIT). You're free to use, modify, and distribute it—just include the original copyright notice.
+
+## 🤝 Contributing
+
+Feedback and contributions are welcome! If you use this in your classroom or find issues, please share your experience.
+
+## 📖 Learn More
+
+- [Newsvendor Problem (Wikipedia)](https://en.wikipedia.org/wiki/Newsvendor_model)
+- Optimal ordering strategy: Order the critical fractile quantity based on cost ratio and demand distribution

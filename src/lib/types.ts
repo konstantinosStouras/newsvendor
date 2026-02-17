@@ -26,6 +26,8 @@ export type LeaderboardRow = {
   name: string;
   profit: number;
   avgOrder: number;
+  ordersByWeek?: Array<number | null>;
+  profitsByWeek?: number[];
 };
 
 export type SessionPublic = {
