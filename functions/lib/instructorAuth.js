@@ -51,6 +51,10 @@ exports.registerInstructor = (0, https_1.onCall)(async (request) => {
     }
     // Check if this is an admin email
     const isAdmin = (0, auth_1.isAdminEmail)(email);
+    // Track the created Auth user so we can roll it back if a later step
+    // (custom claims / Firestore write) fails, otherwise we leave an orphaned
+    // account that blocks the user from ever retrying registration.
+    let createdUid = null;
     try {
         // Create Firebase Auth user
         const userRecord = await admin.auth().createUser({
@@ -59,6 +63,7 @@ exports.registerInstructor = (0, https_1.onCall)(async (request) => {
             displayName,
         });
         const uid = userRecord.uid;
+        createdUid = uid;
         const now = admin.firestore.FieldValue.serverTimestamp();
         if (isAdmin) {
             // Admin users are auto-approved
@@ -104,6 +109,16 @@ exports.registerInstructor = (0, https_1.onCall)(async (request) => {
     catch (error) {
         if (error.code === "auth/email-already-exists") {
             throw new https_1.HttpsError("already-exists", "An account with this email already exists.");
+        }
+        // Roll back the orphaned Auth user if it was created before the failure,
+        // so the account isn't left in a half-registered state that can't retry.
+        if (createdUid) {
+            try {
+                await admin.auth().deleteUser(createdUid);
+            }
+            catch (cleanupErr) {
+                console.error("Failed to roll back orphaned auth user:", cleanupErr);
+            }
         }
         console.error("Registration error:", error);
         throw new https_1.HttpsError("internal", "Failed to create account.");

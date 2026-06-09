@@ -250,6 +250,10 @@ export const joinSession = onCall(async (request) => {
           { merge: true }
         );
         tx.set(nameRef, { uid });
+        // A brand-new player doc was created (playerSnap did not exist above),
+        // so the session's player count must be bumped just like the
+        // fresh-create path below.
+        tx.update(sessionRef, { playersCount: admin.firestore.FieldValue.increment(1) });
         resumed = false;
         return;
       }
