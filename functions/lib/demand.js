@@ -8,7 +8,11 @@ function makeRng(seed) {
     let s = seed >>> 0;
     return () => {
         s = (1664525 * s + 1013904223) >>> 0;
-        return (s & 0xffffffff) / 0x100000000;
+        // s is an unsigned 32-bit int in [0, 2^32). Divide directly to get [0, 1).
+        // NOTE: `s & 0xffffffff` must NOT be used here — JS bitwise operators coerce
+        // to a *signed* 32-bit int, turning ~half the values negative and producing
+        // a generator with range [-0.5, 0.5).
+        return s / 0x100000000;
     };
 }
 function boxMuller(rng) {
