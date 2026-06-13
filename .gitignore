@@ -28,3 +28,15 @@ yarn-error.log*
 /.env
 /.env.*
 node_modules
+
+# Secrets — service account keys must NEVER be committed
+*firebase-adminsdk*.json
+*-service-account*.json
+serviceAccount*.json
+
+# Build artifacts and editor/tooling temp files
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+/dist/
+vite.config.ts.timestamp-*.mjs
+*.timestamp-*.mjs
